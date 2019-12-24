@@ -1,0 +1,14 @@
+Dependencies
+- Git
+- Bash
+- Package Manager
+
+
+To run this script:
+- sudo apt-get update 
+- sudo apt-get upgrade
+- sudo apt-get install git
+- cd to location where you wish to run the configurer
+- git clone https://github.com/Cj-muse/OS_Configurer.git
+- ./run.sh
+
