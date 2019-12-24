@@ -15,7 +15,7 @@ This system installs Linux based operating systems with desired packages configu
 
 ## To run this script:
 
-1.  cd to location where you wish to run the configurer
-- git clone https://github.com/Cj-muse/OS_Configurer.git
-- ./OS_Configurer/run.sh
-- rm  -rf OS_Configurer
+1. cd to location where you wish to run the configurer
+2. git clone https://github.com/Cj-muse/OS_Configurer.git
+3. ./OS_Configurer/run.sh
+4. rm  -rf OS_Configurer
