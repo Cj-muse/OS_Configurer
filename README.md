@@ -10,7 +10,7 @@ This system installs Linux based operating systems with desired packages configu
 
 - Git
 - Bash
-- Package Manager
+- Apt-get (Package Manager)
 
 
 ## To run this script:

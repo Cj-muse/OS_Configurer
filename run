@@ -1,0 +1,124 @@
+#!/bin/bash
+
+<<COMMENT
+Author: 
+	Conner Mattingly
+
+Description: 
+	This script is designed to install an ubuntu based operating system with 
+	desired software packages and setup various OS configurations as preferred.
+
+Edit History: 
+	DEC 20th 2019 [Initial creation of script. Header created.]	
+	DEC 24th 2019 [Added packages to config. Created Error message for bad 
+		config file]
+	DEC 29th 2019 [Changes tabs to 2 spaces. Added os_update, get_os_and_version,
+    and install_packages function stubs. In the middle of concatenating an update 
+    command ]
+
+
+COMMENT
+
+################################################################################
+# Global Variables #############################################################
+################################################################################
+
+# Configurations 
+PACKAGE_CONFIG=packages.config
+PACKAGE_MANAGER="apt"
+PACKAGE_MANAGER_INSTALL_COMMAND=
+PACKAGE_MANAGER_UPDATE_COMMAND=
+PACKAGE_MANAGER_UPGRADE_COMMAND=
+OS=
+VER=
+#_test_command_execution
+
+# Error Messages 
+BAD_CONFIG_FILE_EXCEPTION_MESSAGE=$(cat << EndOfMessage 
+ERROR: Either missing package configuration file or file is not a regular file.
+File: ${_package_config_filename}
+EndOfMessage
+)
+
+################################################################################
+# Function Definitions #########################################################
+################################################################################
+function verify_params() {
+	if [[ ! -f $PACKAGE_CONFIG  ]]; then	
+		echo $BAD_CONFIG_FILE_EXCEPTION_MESSAGE
+		echo Exiting.
+		exit 1
+	fi
+}
+
+# This function gets the OS and Version depending on which OS files it has
+# Taken from https://unix.stackexchange.com/questions/6345/how-can-i-get-distribution-name-and-version-number-in-a-simple-shell-script
+function get_os_and_version() {
+  if [[ -f /etc/os-release ]]; then
+    # freedesktop.org and systemd
+    echo Getting OS and Version information.
+    . /etc/os-release
+    OS=$NAME
+    VER=$VERSION_ID
+  fi
+
+  echo "OS=${OS}"
+  echo "VER=${VER}"
+  echo
+  
+}
+
+function set_package_manager() {
+  echo Setting Package Manager.
+	
+  case $OS in
+    "Linux Mint" )
+      echo The OS is Linux Mint
+      echo "Version=${VER}"
+      PACKAGE_MANAGER=apt 
+      PACKAGE_MANAGER_INSTALL_COMMAND="-get install "
+      PACKAGE_MANAGER_UPDATE_COMMAND="-get update "
+      PACKAGE_MANAGER_UPGRADE_COMMAND="-get upgrade "
+      ;;
+    * )
+      echo OS Uknown
+      echo Exiting
+      exit 1
+      ;;
+  esac
+
+  echo "Package manager set to: ${PACKAGE_MANAGER}"
+  echo
+}
+
+# run package manager update and upgrade 
+function update_os() {
+  echo Updating OS...
+
+  # TODO:  Should Eval be used or NAH
+  # This says yay: https://askubuntu.com/questions/476523/build-command-by-concatenating-string-in-bash
+  # This says Nay: https://google.github.io/styleguide/shell.xml
+  #sudo $("$PACKAGE_MANAGER${PACKAGE_MANAGER_UPDATE_COMMAND}")
+
+}
+
+function install_packages() {
+	#echo Installing packages...
+  echo install_packages Not implemented 
+}
+
+################################################################################
+# Main Script ##################################################################
+################################################################################
+function main(){
+  echo Running OS Configurer.
+  echo
+  verify_params
+  get_os_and_version
+  set_package_manager
+  update_os
+  install_packages  
+}
+
+# Run
+main
