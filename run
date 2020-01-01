@@ -15,6 +15,7 @@ Edit History:
 	DEC 29th 2019 [Changes tabs to 2 spaces. Added os_update, get_os_and_version,
     and install_packages function stubs. In the middle of concatenating an update 
     command ]
+  DEC 31st 2019 []
 
 
 COMMENT
@@ -23,7 +24,7 @@ COMMENT
 # Global Variables #############################################################
 ################################################################################
 
-# Configurations 
+# Configurations and global variables... 
 PACKAGE_CONFIG=packages.config
 PACKAGE_MANAGER="apt"
 PACKAGE_MANAGER_INSTALL_COMMAND=
@@ -54,9 +55,10 @@ function verify_params() {
 # This function gets the OS and Version depending on which OS files it has
 # Taken from https://unix.stackexchange.com/questions/6345/how-can-i-get-distribution-name-and-version-number-in-a-simple-shell-script
 function get_os_and_version() {
+  echo Getting OS and Version information.
+
   if [[ -f /etc/os-release ]]; then
     # freedesktop.org and systemd
-    echo Getting OS and Version information.
     . /etc/os-release
     OS=$NAME
     VER=$VERSION_ID
