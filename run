@@ -17,7 +17,8 @@ Edit History:
     command ]
   DEC 31st 2019 [Created error and warning tracking arrays. Created output method
     for message arrays. Executed a concatenated update command]
-
+  JAN 1st 2020 [Happy New Year! Introduced EXIT_STATUS. Removed unneccessary 
+    command substitution in update_os. Tweaked output_message_array. ]
 
 COMMENT
 
@@ -36,6 +37,7 @@ VER=
 #_test_command_execution
 
 # Errors
+EXIT_STATUS=0
 BAD_CONFIG_FILE_EXCEPTION_MESSAGE=$(cat << EndOfMessage 
 ERROR: Either missing package configuration file or file is not a regular file.
 File: ${_package_config_filename}
@@ -55,6 +57,9 @@ function error() {
   error_string="${RED}ERROR: ${1}${NO_COLOR}"
   echo -e $error_string
   ERROR_ARRAY+=("$error_string")
+  if [[ $EXIT_STATUS -eq 0 ]]; then
+    EXIT_STATUS=1
+  fi
 }
 
 function warning() {
@@ -66,7 +71,9 @@ function warning() {
 function output_message_array() {
   message_array=$1
   for message in "${message_array[@]}"; do
-    echo -e ${message}
+    if [[ $message ]]; then
+      echo -e ${message}
+    fi
   done
 }
 
@@ -119,44 +126,44 @@ function set_package_manager() {
 # run package manager update 
 function update_os() {
   echo "Updating OS..."
+  update_cmd="sudo "
+  update_cmd+=$PACKAGE_MANAGER
+  update_cmd+=$PACKAGE_MANAGER_UPDATE_COMMAND
 
   # TODO:  Should Eval be used or NAH
   # This says yay: https://askubuntu.com/questions/476523/build-command-by-concatenating-string-in-bash
   # This says Nay: https://google.github.io/styleguide/shell.xml
-  update_cmd="sudo "
-  update_cmd+=$PACKAGE_MANAGER
-  update_cmd+=$PACKAGE_MANAGER_UPDATE_COMMAND
   echo "Executing command: [$update_cmd]"
-  if [[ $(eval $update_cmd) ]]; then
-    echo "Update successfull."
-  else
+  eval $update_cmd
+  exit_value=$?
+  echo "Exitvalue: $exit_value"
+  if [[ $exit_value ]]; then
     error "Failed to update OS. Command: [$update_cmd]"
     return 1
   fi
+
+  echo "Update successfull"  
 }
 
-function install_packages() {
-	echo "Installing packages..."
-  echo "Install_packages Not implemented"
-}
-
-# run package manager upgrade 
-function update_os() {
-  echo "Updating OS..."
+function upgrade_os() {
+   echo "Upgrading OS..."
 
   # TODO:  Should Eval be used or NAH
   # This says yay: https://askubuntu.com/questions/476523/build-command-by-concatenating-string-in-bash
   # This says Nay: https://google.github.io/styleguide/shell.xml
-  update_cmd="sudo "
-  update_cmd+=$PACKAGE_MANAGER
-  update_cmd+=$PACKAGE_MANAGER_UPDATE_COMMAND
-  echo "Executing command: [$update_cmd]"
-  if [[ $(eval $update_cmd) ]]; then
-    echo "Update successfull."
+  upgrade_cmd="sudo "
+  upgrade_cmd+=$PACKAGE_MANAGER
+  upgrade_cmd+=$PACKAGE_MANAGER_UPGRADE_COMMAND
+  echo "Executing command: [$upgrade_cmd]"
+  <<COMMENT
+  if [[ $(eval $upgrade_cmd) ]]; then
+    echo "Upgrade successfull."
   else
-    error "Failed to update OS. Command: [$update_cmd]"
+    error "Failed to upgrade OS. Command: [$upgrade_cmd]"
     return 1
-  fi
+  fi 
+
+COMMENT
 }
 
 function install_packages() {
@@ -173,12 +180,19 @@ function main(){
   get_os_and_version
   set_package_manager
   update_os
-  install_packages  
+  #upgrade_os
+  #install_packages  
+
+  # Cleanup
+  echo "========================================================================="
   output_message_array "$WARNING_ARRAY"
   output_message_array "$ERROR_ARRAY"
+  echo "========================================================================="  
   echo "Finished configuring your OS. Thank you for using the configurer!"
   echo "Till next time..."
-  exit 0
+
+  echo "exit: $EXIT_STATUS"
+  exit $EXIT_STATUS
 }
 
 # Run
