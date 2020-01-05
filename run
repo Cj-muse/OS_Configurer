@@ -24,6 +24,12 @@ Edit History:
     other tweaks to package manager install/update commands. Also, script is 
     now outputing the error and warning arrays correctly.]
 
+Resources: (See tabs for continued links)
+  https://www.tldp.org/LDP/Bash-Beginners-Guide/html/sect_07_01.html
+  https://google.github.io/styleguide/shell.xml
+  https://www.gnu.org/savannah-checkouts/gnu/bash/manual/bash.html#Command-
+    Substitution
+  
 COMMENT
 
 ################################################################################
