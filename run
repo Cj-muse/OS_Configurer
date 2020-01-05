@@ -13,12 +13,16 @@ Edit History:
 	DEC 24th 2019 [Added packages to config. Created Error message for bad 
 		config file]
 	DEC 29th 2019 [Changes tabs to 2 spaces. Added os_update, get_os_and_version,
-    and install_packages function stubs. In the middle of concatenating an update 
-    command ]
-  DEC 31st 2019 [Created error and warning tracking arrays. Created output method
-    for message arrays. Executed a concatenated update command]
+    and install_packages function stubs. In the middle of concatenating an 
+    update command ]
+  DEC 31st 2019 [Created error and warning tracking arrays. Created output 
+  method for message arrays. Executed a concatenated update command]
   JAN 1st 2020 [Happy New Year! Introduced EXIT_STATUS. Removed unneccessary 
-    command substitution in update_os. Tweaked output_message_array. ]
+    command substitution in update_os. Tweaked output_message_array. Added the
+    semi finished stub of upgrade_os.]
+  JAN 4th 2020 [Created the if_error function. I think I like it... Made some
+    other tweaks to package manager install/update commands. Also, script is 
+    now outputing the error and warning arrays correctly.]
 
 COMMENT
 
@@ -30,6 +34,7 @@ COMMENT
 PACKAGE_CONFIG=packages.config
 PACKAGE_MANAGER="apt"
 PACKAGE_MANAGER_INSTALL_COMMAND=
+PACKAGE_MANAGER_INSTALL_OPTIONS=
 PACKAGE_MANAGER_UPDATE_COMMAND=
 PACKAGE_MANAGER_UPGRADE_COMMAND=
 OS=
@@ -53,6 +58,32 @@ NO_COLOR='\033[0m'
 # Function Definitions #########################################################
 ################################################################################
 # TODO: Extract logging utilities into a new script.
+
+# This function checks to see if the imediatly preceding command failed or not.
+# This function MUST be called directly after the command you would
+# like to check the result of.
+# Arg 1: Output message if preceding command failed (Non-zero exit code)
+# Arg 2: Output message if preceding command succeeded (0 exit code)
+# Returns: 1 if preceding command failed or 0 otherwise.
+function if_error() {
+  exit_value=$?
+  error_message=$1
+  success_message=$2
+  if [[ $exit_value -ne 0 ]]; then
+    if [[ -z "${error_message/}" ]]; then
+      error "No message provided... Exit status: $exit_value"
+    else
+      error "${error_message} Exit status: $exit_value"
+    fi
+    return 1
+  else # On Success
+    if [[ -n "${success_message/}" ]]; then
+      echo "${success_message}"
+    fi
+    return 0
+  fi
+}
+
 function error() {
   error_string="${RED}ERROR: ${1}${NO_COLOR}"
   echo -e $error_string
@@ -69,7 +100,7 @@ function warning() {
 }
 
 function output_message_array() {
-  message_array=$1
+  message_array=("$@")
   for message in "${message_array[@]}"; do
     if [[ $message ]]; then
       echo -e ${message}
@@ -108,10 +139,11 @@ function set_package_manager() {
     "Linux Mint" )
       echo "The OS is Linux Mint"
       echo "Version=${VER}"
-      PACKAGE_MANAGER="apt"
-      PACKAGE_MANAGER_INSTALL_COMMAND="-get install "
-      PACKAGE_MANAGER_UPDATE_COMMAND="-get update"
-      PACKAGE_MANAGER_UPGRADE_COMMAND="-get upgrade"
+      PACKAGE_MANAGER="apt-get "
+      PACKAGE_MANAGER_INSTALL_COMMAND="install"
+      PACKAGE_MANAGER_INSTALL_OPTIONS="-y "
+      PACKAGE_MANAGER_UPDATE_COMMAND="update"
+      PACKAGE_MANAGER_UPGRADE_COMMAND="upgrade"
       ;;
     * )
       echo "OS Uknown"
@@ -135,12 +167,7 @@ function update_os() {
   # This says Nay: https://google.github.io/styleguide/shell.xml
   echo "Executing command: [$update_cmd]"
   eval $update_cmd
-  exit_value=$?
-  echo "Exitvalue: $exit_value"
-  if [[ $exit_value ]]; then
-    error "Failed to update OS. Command: [$update_cmd]"
-    return 1
-  fi
+  if_error  "Error updating OS. Command: [$update_cmd]. "
 
   echo "Update successfull"  
 }
@@ -155,20 +182,34 @@ function upgrade_os() {
   upgrade_cmd+=$PACKAGE_MANAGER
   upgrade_cmd+=$PACKAGE_MANAGER_UPGRADE_COMMAND
   echo "Executing command: [$upgrade_cmd]"
-  <<COMMENT
-  if [[ $(eval $upgrade_cmd) ]]; then
-    echo "Upgrade successfull."
-  else
-    error "Failed to upgrade OS. Command: [$upgrade_cmd]"
-    return 1
-  fi 
-
-COMMENT
+  success="Upgrade successfull" 
+  failure="Error upgrading OS. Command: [$upgrade_cmd]. " 
+  eval $upgrade_cmd
+  if_error $failure $success
 }
 
 function install_packages() {
   echo "Installing packages..."
-  echo "Install_packages Not implemented"
+
+  install_cmd="sudo "
+  install_cmd+=$PACKAGE_MANAGER
+  install_cmd+=$PACKAGE_MANAGER_INSTALL_OPTIONS
+  install_cmd+=$PACKAGE_MANAGER_INSTALL_COMMAND
+  echo "Executing command: [$install_cmd]"
+
+  while read package; do
+    # Check to insure package string is not just whitespace 
+    # ${parameter/pattern/string}
+    # url below is continued on the second line. Please concatenate
+    # https://www.gnu.org/savannah-checkouts/gnu/bash/manual
+    #/bash.html#Shell-Parameter-Expansion
+    if [[ -n "${package/}" ]]; then
+      echo "installing $package"
+      failure_message="Error executing command: [$install_cmd $package]."
+      eval $install_cmd $package
+      if_error $failure_message
+    fi
+  done < $PACKAGE_CONFIG
 }
 
 ################################################################################
@@ -179,14 +220,18 @@ function main(){
   verify_params
   get_os_and_version
   set_package_manager
+#<<COMMENT  
   update_os
-  #upgrade_os
-  #install_packages  
+  upgrade_os
+#COMMENT
 
-  # Cleanup
+
+  install_packages  
+
+  # Finish up
   echo "========================================================================="
-  output_message_array "$WARNING_ARRAY"
-  output_message_array "$ERROR_ARRAY"
+  output_message_array "${WARNING_ARRAY[@]}"
+  output_message_array "${ERROR_ARRAY[@]}"
   echo "========================================================================="  
   echo "Finished configuring your OS. Thank you for using the configurer!"
   echo "Till next time..."
