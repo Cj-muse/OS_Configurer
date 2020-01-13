@@ -4,7 +4,7 @@
 Author: 
 	Conner Mattingly
 
-Description: 
+Description :
 	This script is designed to install an ubuntu based operating system with 
 	desired software packages and setup various OS configurations as preferred.
 
@@ -230,8 +230,6 @@ function main(){
   update_os
   upgrade_os
 #COMMENT
-
-
   install_packages  
 
   # Finish up
@@ -242,7 +240,7 @@ function main(){
   echo "Finished configuring your OS. Thank you for using the configurer!"
   echo "Till next time..."
 
-  echo "exit: $EXIT_STATUS"
+  #echo "exit: $EXIT_STATUS"
   exit $EXIT_STATUS
 }
 
