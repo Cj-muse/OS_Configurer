@@ -4,18 +4,16 @@ This system installs Linux based operating systems with desired packages configu
 
 ## Supported Systems 
 
-- Ubuntu
+- Linux Mint
 
 ## Dependencies
 
 - Git
 - Bash
-- Apt-get (Package Manager)
-
 
 ## To run this script:
 
 1. cd to location where you wish to run the configurer
 2. git clone https://github.com/Cj-muse/OS_Configurer.git
-3. ./OS_Configurer/run.sh
-4. rm  -rf OS_Configurer
+3. run the script, ./OS_Configurer/run.sh
+4. delete the files, rm  -rf OS_Configurer
